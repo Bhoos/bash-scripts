@@ -1,4 +1,16 @@
 #!/bin/bash
+apt install -y rsync
+# Create new user for access
+useradd --create-home --shell /bin/bash joker
+# Copy the ssh authorized keys
+rsync --archive --chown=joker:joker ~/.ssh /home/joker
+# Grant sudo priviledges
+usermod -aG sudo joker
+echo "joker   ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Disable ssh for root user
+sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
+service ssh restart
 
 # Install curl
 apt install -y curl
@@ -21,7 +33,7 @@ apt install -y git gcc g++ make
 apt install -y nodejs
 
 # Install yarn
-apt install yarn
+apt install -y yarn
 
 # Setup Personal access tokens for github package registry access
 # Make sure the personal access token has read only access on packages
