@@ -1,5 +1,5 @@
 #!/bin/bash
-export DB_USER = "bhoos"
+export DB_USER="bhoos"
 
 apt -y update
 apt -y upgrade
