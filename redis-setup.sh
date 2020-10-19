@@ -7,8 +7,34 @@ export TOTAL_MEM_MB=$(free -m | grep Mem | awk '{print $2}')
 # Use all expect 300MB memory for redis
 export REDIS_MEM_MB=$((TOTAL_MEM_MB - 300))
 
-apt update
+# Update the system
+apt -y update
 
+
+# Set overcommit to 1, Red details at: 
+# https://engineering.pivotal.io/post/virtual_memory_settings_in_linux_-_the_problem_with_overcommit/
+sysctl vm.overcommit_memory=1
+echo "vm.overcommit_memory=1" >> /etc/sysctl.conf
+
+# Disable THP (Transparent Huge Pages) for redis efficiency
+# Make sure the THP is disabled within restarts
+echo "
+[Unit]
+Description=Disable Transparent Huge Pages (THP)
+DefaultDependencies=no
+After=sysinit.target local-fs.target
+Before=redis.service
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo never | tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null'
+[Install]
+WantedBy=basic.target
+" > /etc/systemd/system/disable-transparent-huge-pages.service
+systemctl daemon-reload
+systemctl enable disable-transparent-huge-pages
+systemctl start disable-transparent-huge-page
+
+# Install the redis server (5.0)
 apt install -y redis-server
 
 # Update configuration to run via systemd
@@ -22,4 +48,8 @@ sed -i "s/^protected-mode yes/protected-mode no/g" /etc/redis/redis.conf
 sed -i "s/^# maxmemory-policy .*/maxmemory-policy allkeys-lru/g" /etc/redis/redis.conf
 sed -i "s/^# maxmemory .*/maxmemory ${REDIS_MEM_MB}mb/g" /etc/redis/redis.conf
 
-systemctl 
+# Restart
+systemctl daemon-reload
+systemctl enable redis
+systemctl restart redis
+
