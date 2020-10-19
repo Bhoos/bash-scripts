@@ -32,7 +32,7 @@ WantedBy=basic.target
 " > /etc/systemd/system/disable-transparent-huge-pages.service
 systemctl daemon-reload
 systemctl enable disable-transparent-huge-pages
-systemctl start disable-transparent-huge-page
+systemctl start disable-transparent-huge-pages
 
 # Install the redis server (5.0)
 apt install -y redis-server
