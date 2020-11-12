@@ -4,6 +4,9 @@ export DB_USER="bhoos"
 apt -y update
 apt -y upgrade
 
+-- gnupg is not installed on some instances
+apt install -y gnupg
+
 # Include postgreSQL repository
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
